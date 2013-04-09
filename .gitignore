@@ -40,3 +40,9 @@ nosetests.xml
 /question_2_3_c.py
 /question_2_3_d.py
 *.sh
+/question_2_4_a.py
+/question_2_4_b.py
+/question_2_5_a.py
+/question_2_5_b.py
+Makefile
+nb_classifier
