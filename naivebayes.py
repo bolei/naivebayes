@@ -45,11 +45,11 @@ def trainModel(fileName):
 			label = cat_index.index(fname[0:3])
 			with open(data_folder + '/' + fname) as f:
 				content = f.readlines()
-	
 				count_doc[label] += 1
 				for token in content:
-					cat_tokens[label].append(token.strip())
-					vocabset.add(token.strip())
+					token = token.strip().lower();
+					cat_tokens[label].append(token)
+					vocabset.add(token)
 	
 	example_count = sum(count_doc)
 	vocab = list(vocabset)
@@ -71,7 +71,7 @@ def trainModel(fileName):
 def getLogLikelihood(category, corpus):
 	ll = math.log(prior[category])
 	for w in corpus:
-		w = w.strip()
+		w = w.strip().lower()
 		if(vocab_hash.has_key(w)):
 			ll += math.log(conditional_prob[category][vocab_hash[w]])
 	return ll

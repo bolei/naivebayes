@@ -36,3 +36,7 @@ nosetests.xml
 /split
 /result.txt
 /test.py
+/question_2_3_b.py
+/question_2_3_c.py
+/question_2_3_d.py
+*.sh
