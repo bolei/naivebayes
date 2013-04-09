@@ -10,6 +10,7 @@ cat_index = ["con", "lib"]
 prior = []
 conditional_prob = []
 vocab = []
+vocab_hash = {}
 
 def getunigram(corpus, vocab):
 	unigram = {}
@@ -40,35 +41,39 @@ def trainModel(fileName):
 	with open(fileName) as fhandle:
 		fileNames = fhandle.readlines()
 		for fname in fileNames:
+			fname = fname.strip()
 			label = cat_index.index(fname[0:3])
-			with open(data_folder + '/' + fname.strip()) as f:
+			with open(data_folder + '/' + fname) as f:
 				content = f.readlines()
 	
 				count_doc[label] += 1
-				cat_tokens[label].extend(content)
-	
 				for token in content:
-					vocabset.add(token)
+					cat_tokens[label].append(token.strip())
+					vocabset.add(token.strip())
+	
+	example_count = sum(count_doc)
+	vocab = list(vocabset)
+	v_size = len(vocab)
+	
+	for i in xrange(v_size):
+		vocab_hash[vocab[i]] = i
 		
-		example_count = sum(count_doc)
-		vocab = list(vocabset)
-		
-		for i in xrange(len(prior)):
-			for j in xrange(len(vocab)):
-				conditional_prob[i].append(0)
-		
-		for i in xrange(len(count_doc)):
-			prior[i] = float(count_doc[i]) / float(example_count)
-			unigram_arr[i] = getunigram(cat_tokens[i], vocab)
-			
-			for w in vocab:
-				conditional_prob[i][vocab.index(w)] = float(unigram_arr[i][w] + 1) / float(len(cat_tokens[i]) + len(vocabset))
+	for i in xrange(len(prior)):
+		for j in xrange(v_size):
+			conditional_prob[i].append(0)
+	
+	for i in xrange(len(prior)):
+		prior[i] = float(count_doc[i]) / float(example_count)
+		unigram_arr[i] = getunigram(cat_tokens[i], vocab)
+		for k in xrange(v_size):
+			conditional_prob[i][k] = float(unigram_arr[i][vocab[k]] + 1) / float(len(cat_tokens[i]) + v_size)
 
 def getLogLikelihood(category, corpus):
 	ll = math.log(prior[category])
 	for w in corpus:
-		if(w in vocab):
-			ll += math.log(conditional_prob[category][vocab.index(w)])
+		w = w.strip()
+		if(vocab_hash.has_key(w)):
+			ll += math.log(conditional_prob[category][vocab_hash[w]])
 	return ll
 
 def testModel(fileName):
@@ -76,13 +81,17 @@ def testModel(fileName):
 		fnames = fHandle.readlines()
 		for fname in fnames:
 			fname = fname.strip()
-			with open(data_folder + '/' + fname.strip()) as f:
+			with open(data_folder + '/' + fname) as f:
+# 				print "loading file " + fname;
 				content = f.readlines()
-				max_ll = sys.float_info.min
+				max_ll = float("-inf")
 				cat = 0
 				for i in xrange(len(prior)):
 					ll = getLogLikelihood(i, content)
+# 					print "max_ll=" + str(max_ll)
+# 					print "ll=" + str(ll)
 					if max_ll < ll:
+# 						print "max_ll<ll"
 						max_ll = ll
 						cat = i
 				classification = cat_index[cat].upper()[0]
